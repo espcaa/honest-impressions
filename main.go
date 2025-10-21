@@ -57,7 +57,10 @@ func (bot *HonestImpressionsBot) Start() {
 		w.Write([]byte("^-^"))
 	})
 
-	bot.Router.Post("/api/new-impression", bot.HandleNewImpression)
+	bot.Router.Post("/api/new-impression", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("received new impression request")
+		bot.HandleNewImpression(w, r)
+	})
 
 	log.Println("starting server on port " + bot.Params.Port)
 	// start the server
