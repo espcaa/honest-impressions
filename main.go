@@ -89,9 +89,10 @@ func (bot *HonestImpressionsBot) HandleNewImpression(w http.ResponseWriter, r *h
 	}
 
 	var data struct {
-		Type      string `json:"type"`
-		TriggerID string `json:"trigger_id"`
-		View      struct {
+		Type       string `json:"type"`
+		TriggerID  string `json:"trigger_id"`
+		CallbackID string `json:"callback_id"`
+		View       struct {
 			ID    string `json:"id"`
 			State struct {
 				Values map[string]map[string]struct {
@@ -106,22 +107,19 @@ func (bot *HonestImpressionsBot) HandleNewImpression(w http.ResponseWriter, r *h
 		return
 	}
 
-	switch data.Type {
-	case "shortcut":
+	if data.CallbackID == "impression_new" {
 		err := bot.OpenImpressionModal(data.TriggerID)
 		if err != nil {
 			log.Printf("Failed to open modal: %v", err)
 			http.Error(w, "failed to open modal", http.StatusInternalServerError)
 			return
 		}
-	case "view_submission":
+	}
+	if data.Type == "view_submission" {
 		impression := data.View.State.Values["impression_input"]["impression_value"].Value
 		log.Printf("New honest impression : %s", impression)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{}`))
-		return
-	default:
-		http.Error(w, "unsupported interaction type", http.StatusBadRequest)
 		return
 	}
 
